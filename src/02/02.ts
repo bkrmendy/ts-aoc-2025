@@ -27,6 +27,7 @@ export const partOne = solve(i => {
   return n === start.repeat(2)
 })
 
+// TODO: factor this out into `solve`
 export const partTwo = (input: Input) => {
   let result = 0
   for (const [from, to] of input) {
