@@ -1,4 +1,5 @@
 import { lines, sum } from '@/advent'
+import { Array, pipe } from 'effect'
 
 interface Interval {
   from: number
@@ -18,15 +19,12 @@ export function parse(input: string) {
 
 type Input = ReturnType<typeof parse>
 
-export function partOne(input: Input) {
-  return input.available.filter(i =>
-    input.fresh.some(({ from, to }) => from <= i && i <= to)
-  ).length
-}
-
-function size({ from, to }: Interval) {
-  return to - from + 1
-}
+export const partOne = (input: Input) =>
+  pipe(
+    input.available,
+    Array.filter(i => input.fresh.some(({ from, to }) => from <= i && i <= to)),
+    Array.length
+  )
 
 export function overlaps(one: Interval, other: Interval) {
   /**
@@ -47,13 +45,13 @@ export function partTwo(input: Input) {
   input.fresh.sort((a, b) => a.from - b.from)
   let result: Interval[] = [input.fresh[0]!]
   input.fresh.slice(1).forEach(i => {
-    if (overlaps(result.at(-1)!, i)) {
-      const last = result.pop()!
-      result.push(merge(i, last))
+    const top = result.pop()!
+    if (overlaps(top, i)) {
+      result.push(merge(top, i))
     } else {
-      result.push(i)
+      result.push(top, i)
     }
   })
 
-  return sum(result.map(i => size(i)))
+  return sum(result.map(({ from, to}) => to - from + 1))
 }
