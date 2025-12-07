@@ -1,14 +1,14 @@
-import { lines } from '@/advent'
-import { Array } from 'effect'
-import { array, number } from 'effect/Equivalence'
+import { lines, memo, sum } from '@/advent'
 
 export function parse(input: string) {
-  return lines(input).map(l => [...l])
+  return lines(input)
+    .map(l => [...l])
+    .filter(i => i.some(c => c !== '.'))
 }
 
 type Input = ReturnType<typeof parse>
 
-export function partOne(input: Input) {
+function getBeamsWithSplits(input: string[][]) {
   let splits = 0
   let beams = [new Set<number>([input[0]!.indexOf('S')])]
   for (let i = 1; i < input.length; i++) {
@@ -23,37 +23,57 @@ export function partOne(input: Input) {
     }
     beams.push(nextBeams)
   }
-  return splits
+  return { splits, beams }
 }
 
-function timelines(splits: number[][]): number[][] {
-  const [next, ...rest] = splits
-  if (next == null) {
-    return [[]]
-  }
-  return next.flatMap(n => {
-    return timelines(rest).map(t => {
-      return [n, ...t]
-    })
-  })
+export function partOne(input: Input) {
+  return getBeamsWithSplits(input).splits
 }
 
 export function partTwo(input: Input) {
-  const i2 = input.filter(i => i.some(c => c !== '.'))
-  let beams = [new Set<number>([i2[0]!.indexOf('S')])]
-  for (let i = 1; i < i2.length; i++) {
-    let nextBeams = new Set<number>([...beams.at(-1)!])
-    for (const beam of beams.at(-1)!) {
-      if (i2[i]![beam] === '^') {
-        nextBeams.delete(beam)
-        nextBeams.add(beam - 1)
-        nextBeams.add(beam + 1)
-      }
-    }
-    beams.push(nextBeams)
-  }
+  const start = input[0]!.indexOf('S')
 
-  const ts = timelines(beams.map(bs => [...bs]))
-  console.log(ts)
-  return Array.dedupeWith(ts, array(number)).length
+  const beams = getBeamsWithSplits(input).beams.map(b =>
+    [...b].toSorted((a, b) => a - b)
+  )
+
+  const ways = memo(
+    (r, i) => `${r}-${i}`,
+    (row: number, index: number): number => {
+      // if splitter on left: how many ways can I reach this splitter
+      // if splitter on righ: how many ways can I reach this splitter
+      // if beam above: recurse one row above
+      
+      // base case
+      if (row === 0 && index === start) {
+        return 1
+      }
+
+      // are we actually on a beam?
+      if (!beams[row]?.includes(index)) {
+        return 0
+      }
+
+      const splitterOnLeft = input[row]![index - 1] === '^'
+      const splitterOnRigh = input[row]![index + 1] === '^'
+      const left = !splitterOnLeft ? 0 : ways(row - 1, index - 1)
+      const right = !splitterOnRigh ? 0 : ways(row - 1, index + 1)
+      const above = ways(row - 1, index)
+
+      return left + right + above
+    }
+  )
+
+  const s = sum([...beams.at(-1)!].map(b => ways(beams.length - 1, b)))
+  console.log(s)
+  return s
 }
+
+// .......S....... 1
+// ......|^|...... 2
+// .....|^|^|..... 4
+// ....|^|^|^|.... 8
+// ...|^|^|||^|...
+// ..|^|^|||^|^|..
+// .|^|||^||.||^|.
+// |^|^|^|^|^|||^|
