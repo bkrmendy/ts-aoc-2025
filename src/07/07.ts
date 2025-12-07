@@ -1,10 +1,9 @@
 import { lines, memo, sum } from '@/advent'
 
-export function parse(input: string) {
-  return lines(input)
+export const parse = (input: string) =>
+  lines(input)
     .map(l => [...l])
     .filter(i => i.some(c => c !== '.'))
-}
 
 type Input = ReturnType<typeof parse>
 
@@ -26,9 +25,7 @@ function getBeamsWithSplits(input: string[][]) {
   return { splits, beams }
 }
 
-export function partOne(input: Input) {
-  return getBeamsWithSplits(input).splits
-}
+export const partOne = (input: Input) => getBeamsWithSplits(input).splits
 
 export function partTwo(input: Input) {
   const start = input[0]!.indexOf('S')
@@ -40,10 +37,6 @@ export function partTwo(input: Input) {
   const ways = memo(
     (r, i) => `${r}-${i}`,
     (row: number, index: number): number => {
-      // if splitter on left: how many ways can I reach this splitter
-      // if splitter on righ: how many ways can I reach this splitter
-      // if beam above: recurse one row above
-      
       // base case
       if (row === 0 && index === start) {
         return 1
@@ -56,24 +49,14 @@ export function partTwo(input: Input) {
 
       const splitterOnLeft = input[row]![index - 1] === '^'
       const splitterOnRigh = input[row]![index + 1] === '^'
-      const left = !splitterOnLeft ? 0 : ways(row - 1, index - 1)
-      const right = !splitterOnRigh ? 0 : ways(row - 1, index + 1)
-      const above = ways(row - 1, index)
 
-      return left + right + above
+      const left = !splitterOnLeft ? 0 : ways(row - 1, index - 1)
+      const righ = !splitterOnRigh ? 0 : ways(row - 1, index + 1)
+      const abov = ways(row - 1, index)
+
+      return left + righ + abov
     }
   )
 
-  const s = sum([...beams.at(-1)!].map(b => ways(beams.length - 1, b)))
-  console.log(s)
-  return s
+  return sum([...beams.at(-1)!].map(b => ways(beams.length - 1, b)))
 }
-
-// .......S....... 1
-// ......|^|...... 2
-// .....|^|^|..... 4
-// ....|^|^|^|.... 8
-// ...|^|^|||^|...
-// ..|^|^|||^|^|..
-// .|^|||^||.||^|.
-// |^|^|^|^|^|||^|

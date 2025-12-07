@@ -9,6 +9,6 @@ describe('Day 07', async () => {
   })
 
   test('Part Two', () => {
-    expect(partTwo(parsed)).toBeDefined()
+    expect(partTwo(parsed)).toEqual(25592971184998)
   })
 })
