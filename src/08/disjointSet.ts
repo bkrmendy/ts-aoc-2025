@@ -28,17 +28,9 @@ export function createDisjointSet(initialSize: number) {
     groups -= 1
   }
 
-  // return the size of the set which has index-th element.
-  // if index is not given, return the number of dijoint sets.
-  function size(index?: number): number {
-    if (index === undefined) return groups
-    return sizes[find(index)]!
-  }
-
   return {
-    find,
     union,
-    size,
-    sizes
+    sizes,
+    groups: () => groups
   }
 }

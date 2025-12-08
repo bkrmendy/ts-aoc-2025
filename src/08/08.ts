@@ -43,7 +43,31 @@ export function partOne(input: Input) {
     set.union(fromIdx, toIdx)
   }
 
-  return product(set.sizes.toSorted((a, b) => (b - a)).slice(0, 3))
+  return product(set.sizes.toSorted((a, b) => b - a).slice(0, 3))
 }
 
-export function partTwo(input: Input) {}
+export function partTwo(input: Input) {
+  const pairs = input
+    .flatMap((from, fromIdx) =>
+      input.flatMap((to, toIdx) =>
+        fromIdx == toIdx
+          ? []
+          : {
+              from,
+              to,
+              fromIdx,
+              toIdx,
+              distance: distance(from, to)
+            }
+      )
+    )
+    .toSorted((a, b) => a.distance - b.distance)
+
+  const set = createDisjointSet(input.length)
+  for (const p of pairs) {
+    set.union(p.fromIdx, p.toIdx)
+    if (set.groups() === 1) {
+      return p.from.x * p.to.x
+    }
+  }
+}
