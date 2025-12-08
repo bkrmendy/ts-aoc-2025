@@ -1,4 +1,4 @@
-import { lines, product } from '@/advent'
+import { lines, pairs, product } from '@/advent'
 import { createDisjointSet } from './disjointSet'
 
 interface Coord {
@@ -29,18 +29,17 @@ function getPairs(coords: Coord[]) {
 }
 
 export function parse(input: string) {
-  return lines(input).map(line => {
+  const coords = lines(input).map(line => {
     const [x, y, z] = line.split(',').map(i => parseInt(i, 10))
     return { x: x!, y: y!, z: z! }
   })
+
+  return { pairs: getPairs(coords), size: coords.length }
 }
 
 type Input = ReturnType<typeof parse>
 
-export function partOne(input: Input) {
-  const pairs = getPairs(input)
-  const size = input.length
-
+export function partOne({ pairs, size }: Input) {
   const upto = 1000
   const set = createDisjointSet(size)
   for (const { fromIdx, toIdx } of pairs.slice(0, upto * 2)) {
@@ -50,10 +49,7 @@ export function partOne(input: Input) {
   return product(set.sizes.toSorted((a, b) => b - a).slice(0, 3))
 }
 
-export function partTwo(input: Input) {
-  const pairs = getPairs(input)
-  const size = input.length
-
+export function partTwo({ pairs, size }: Input) {
   const set = createDisjointSet(size)
   for (const p of pairs) {
     set.union(p.fromIdx, p.toIdx)
