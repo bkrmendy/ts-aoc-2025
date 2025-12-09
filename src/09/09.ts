@@ -1,4 +1,5 @@
 import { lines, pairs } from '@/advent'
+import { Interval, merge, overlaps } from '@/intervals'
 
 interface Coord {
   x: number
@@ -21,26 +22,6 @@ export const partOne = (input: Input) =>
       return (toX - fromX + 1) * (toY - fromY + 1)
     })
   )
-
-interface Interval {
-  from: number
-  to: number
-}
-
-export function overlaps(one: Interval, other: Interval) {
-  /**
-   * one:     |-----------|
-   * other:      |-----------|
-   */
-  return one.from <= other.from && other.from <= one.to
-}
-
-function merge(one: Interval, other: Interval) {
-  return {
-    from: Math.min(one.from, other.from),
-    to: Math.max(one.to, other.to)
-  }
-}
 
 function getStrips(points: Coord[]): Map<number, Interval[]> {
   const ys = points.map(p => p.y).toSorted((a, b) => a - b)

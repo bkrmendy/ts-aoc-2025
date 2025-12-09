@@ -1,10 +1,6 @@
 import { lines, sum } from '@/advent'
+import { Interval, overlaps, merge } from '@/intervals'
 import { Array, pipe } from 'effect'
-
-interface Interval {
-  from: number
-  to: number
-}
 
 export function parse(input: string) {
   const [fresh, available] = input.split('\n\n')
@@ -26,21 +22,6 @@ export const partOne = (input: Input) =>
     Array.length
   )
 
-export function overlaps(one: Interval, other: Interval) {
-  /**
-   * one:     |-----------|
-   * other:      |-----------|
-   */
-  return one.from <= other.from && other.from <= one.to
-}
-
-function merge(one: Interval, other: Interval) {
-  return {
-    from: Math.min(one.from, other.from),
-    to: Math.max(one.to, other.to)
-  }
-}
-
 export function partTwo(input: Input) {
   input.fresh.sort((a, b) => a.from - b.from)
   let result: Interval[] = [input.fresh[0]!]
@@ -53,5 +34,5 @@ export function partTwo(input: Input) {
     }
   })
 
-  return sum(result.map(({ from, to}) => to - from + 1))
+  return sum(result.map(({ from, to }) => to - from + 1))
 }
