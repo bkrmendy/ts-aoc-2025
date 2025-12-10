@@ -1,5 +1,4 @@
 import { lines, sum, words } from '@/advent'
-import { pipe } from 'effect'
 
 export function parse(input: string) {
   return lines(input).map(line => {
@@ -32,15 +31,9 @@ function toggle(lights: string, buttons: number[]): string {
   return lights2.join('')
 }
 
-function score(target: string, button: number[]): number {
-  return button.filter(idx => target[idx] === '#').length
-}
+const done = (state: string) => [...state].every(l => l === '.')
 
-function done(state: string) {
-  return [...state].every(l => l === '.')
-}
-
-function search(target: string, buttons: number[][]): number {
+function searchPt1(target: string, buttons: number[][]): number {
   let seen: Set<string> = new Set()
   let queue: [{ state: string; steps: number }] = [{ state: target, steps: 0 }]
 
@@ -48,7 +41,6 @@ function search(target: string, buttons: number[][]): number {
     const { state, steps } = queue.shift()!
 
     const nextStates = buttons
-      .filter(b => score(state, b) > 0)
       .map(b => toggle(state, b))
       .filter(next => !seen.has(next))
 
@@ -64,6 +56,6 @@ function search(target: string, buttons: number[][]): number {
 }
 
 export const partOne = (input: Input) =>
-  sum(input.map(({ lights, buttons }) => search(lights, buttons)))
+  sum(input.map(({ lights, buttons }) => searchPt1(lights, buttons)))
 
 export function partTwo(input: Input) {}
