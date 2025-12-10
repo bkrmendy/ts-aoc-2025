@@ -35,13 +35,13 @@ function getStrips(points: Coord[]): Map<number, Interval[]> {
 
     let open: number | null = null
     for (let i = 0; i < points.length; i++) {
+      // thankfully the input lists the vertices in order
       const from = points[i]!
       const to = points[(i + 1) % points.length]!
       const [fromX, toX] = [Math.min(from.x, to.x), Math.max(from.x, to.x)]
       const [fromY, toY] = [Math.min(from.y, to.y), Math.max(from.y, to.y)]
 
       if (!(fromY <= y && y <= toY)) {
-        // this edge is not relevant for this strip
         continue
       }
 
@@ -101,19 +101,7 @@ function rectangleCoveredByStrips(
 }
 
 export function partTwo(input: Input) {
-  input.forEach((from, i) => {
-    const to = input[(i + 1) % input.length]!
-    const turn =
-      (from.x === to.x && from.y !== to.y) ||
-      (from.x !== to.x && from.y === to.y)
-    if (!turn) {
-      throw new Error('ooops')
-    }
-  })
-
   const strips = getStrips(input)
-
-  // console.log(strips)
 
   return Math.max(
     ...[...pairs(input)].flatMap(([from, to]) => {
