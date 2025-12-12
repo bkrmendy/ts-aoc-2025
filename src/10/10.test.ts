@@ -5,7 +5,7 @@ describe('Day 10', async () => {
   const { default: input } = await import('./input.txt')
   const parsed = parse(input)
   test('Part One', () => {
-    expect(partOne(parsed)).toBeDefined()
+    expect(partOne(parsed)).toEqual(409)
   })
 
   test('Part Two', () => {

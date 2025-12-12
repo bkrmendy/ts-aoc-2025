@@ -1,4 +1,5 @@
 import { lines, sum, words } from '@/advent'
+import { PriorityQueue } from '@/priority-queue'
 
 export function parse(input: string) {
   return lines(input).map(line => {
@@ -33,9 +34,14 @@ function toggle(lights: string, buttons: number[]): string {
 
 const done = (state: string) => [...state].every(l => l === '.')
 
-function searchPt1(target: string, buttons: number[][]): number {
+function searchLights({ lights: target, buttons }: Input[number]): number {
   let seen: Set<string> = new Set()
-  let queue: [{ state: string; steps: number }] = [{ state: target, steps: 0 }]
+  let queue: [{ state: string; steps: number }] = [
+    {
+      state: target,
+      steps: 0
+    }
+  ]
 
   while (true) {
     const { state, steps } = queue.shift()!
@@ -44,7 +50,7 @@ function searchPt1(target: string, buttons: number[][]): number {
       .map(b => toggle(state, b))
       .filter(next => !seen.has(next))
 
-    if (nextStates.some(s => done(s))) {
+    if (nextStates.some(done)) {
       return steps + 1
     }
 
@@ -55,7 +61,65 @@ function searchPt1(target: string, buttons: number[][]): number {
   }
 }
 
-export const partOne = (input: Input) =>
-  sum(input.map(({ lights, buttons }) => searchPt1(lights, buttons)))
+export const partOne = (input: Input) => sum(input.map(searchLights))
 
-export function partTwo(input: Input) {}
+function decreaseJoltageCounters(counters: number[], button: number[]) {
+  const next = [...counters]
+  button.forEach(b => (next[b]! -= 1))
+  return next
+}
+
+function invalid(state: number[]) {
+  return state.some(_ => _ < 0)
+}
+
+function done2(state: number[]) {
+  return state.every(_ => _ === 0)
+}
+
+function magnitude(buttons: number[]) {
+  return Math.sqrt(sum(buttons.map(b => b ** 2)))
+}
+
+function searchJolts({ jolts: target, buttons }: Input[number]): number {
+  let queue = new PriorityQueue<{
+    state: number[]
+    steps: number
+    d: number
+  }>()
+
+  let seen = new Set<string>()
+
+  queue.enqueue(
+    { state: target, steps: 0, d: magnitude(target) },
+    magnitude(target)
+  )
+
+  while (true) {
+    const { state, steps, d } = queue.dequeue()!
+    if (done2(state)) {
+      return steps
+    }
+    buttons.forEach(button => {
+      const next = decreaseJoltageCounters(state, button)
+      if (invalid(next) || seen.has(next.join(','))) {
+        return
+      }
+      seen.add(next.join(','))
+      queue.enqueue(
+        { state: next, steps: steps + 1, d: magnitude(next) },
+        magnitude(next)
+      )
+    })
+  }
+}
+
+export function partTwo(input: Input) {
+  return -1
+  // return sum(
+  //   input.map((i, idx) => {
+  //     const res = searchJolts(i)
+  //     return res
+  //   })
+  // )
+}
